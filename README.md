@@ -1,2 +1,2 @@
 # Sample-R-Code
-This folder contains sample R code
+This folder contains the sample R code requested by P. Duffy from Neptune and Company
