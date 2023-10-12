@@ -1,0 +1,116 @@
+---
+title: "PDF extraction routine"
+author: "Ron Hall"
+format: html
+editor: visual
+---
+
+```{r}
+# Load packages 
+library(pdftools)
+library(tesseract)
+library(dplyr)
+library(tidyverse)
+```
+
+## PDF Extration Routine
+
+This file was created as a demonstration of the routine that was used in extracting data from pdf files in order to perform QA/QC on existing data. In this process, we wanted to compare the invoice numbers, the item, and the dollar amount on each invoice to information that was delivered to us in a separate csv file.
+
+-   For this process, the invoice pdf files were delivered by batch.
+
+-   There were approximately 500 batch folders with approximately 2,000 pdf files in each folder.
+
+    -   Due to the magnitude of this task, the code was developed, and then set up to run on a remote desktop that was specifically designated for the process.
+
+-   Each of the pdf files contained invoice information, but there were several different layouts. This also added some complexity to the problem since a single template could not be used.
+
+-   The pdf files were a combination of image files as well as readable (editable text) files.
+
+-   The code was developed as a nested for loop so that each file from each folder was examined.
+
+    -   The first loop was set up to look at each folder.
+
+    -   The nested loop looked at each of the files in the folder.
+
+    -   The first part of the nested loop checked each file to determine if the file was a readable pdf.
+
+        -   When the file was a readable pdf, the pdftools package was used.
+
+        -   When the file was saved as an image, the tesseract package was used.
+
+Using these functions from these pacakages, the data from each file was extracted and compiled into a single data set. The following code is an example of this process.
+
+```{r}
+# Create list of the names of the folders within the directory
+my_dirs <- "Data/PDF Files"
+folders <- list.files(my_dirs, full.names = TRUE)
+folders
+
+# Create an empty data frame to store the data
+dat <- data.frame()
+
+for(i in 1:length(folders)){
+  
+  # Create a list of the pdf files in the folder
+  files <- list.files(folders[i], pattern = "\\.pdf", full.names = TRUE)
+  
+  # Read in each of the pdf files individually.
+  for(j in 1:length(files)){
+  
+    # First, read the file in as text
+    txt_dat <- pdf_text(files[j])
+    
+    # Use the teseract function for the cases identified as not having text
+    if(length(txt_dat) == 1 & txt_dat[1] == ""){
+      
+      # Render pdf to png image
+      img_file <- pdftools::pdf_convert(files[j], format = 'tiff', pages = 1, dpi = 400)
+
+      # Extract text from png image
+      txt_dat <- ocr(img_file)
+    }
+  
+  # Parse the data into rows  
+  rows <- scan(textConnection(txt_dat), 
+           what="character", sep = "\n")
+  
+  # Append the rows to the dat data frame
+  dat <- append(dat, rows)
+  }
+}
+```
+
+Once the list of all of the data rows was created, the data was then cleaned. The cleaning process included:
+
+-   Create a data frame from the list of values.
+
+-   The grepl function was then used to identify lines where the key values that we were looking for existed.
+
+The following code is an example of the process used to identify the key values.
+
+```{r}
+
+# Create an empty data set
+dat_1 <- data.frame()
+
+# Loop through each row of the list, and extract the information from the list of values.
+for (i in 1:length(dat)){ # i = 1
+  row = unlist(dat[i])
+  
+  # add the information to a data frame
+  dat_1 <- as.data.frame(rbind(dat_1, row))
+}
+
+# Rename the value column
+names(dat_1) <- "value"
+
+# Identify the lines that contain the key values. Note that the values in this code have been modified to line up with the existing data.
+dat_1 <- dat_1 %>%
+  mutate(flag = case_when(grepl("cash", value) ~ 1,
+                            grepl( "payments", value) ~ 1))
+```
+
+The data was then output into a csv file, and all of the lines were reviewed to ensure that the information that we had identified all of the information from each invoice that we were looking for.
+
+Once the data was reviewed, we then brought the data back into R, and assembled the information that we wanted to use in the QA into a data set, and compared it to the information that was provided to us in the csv file.
