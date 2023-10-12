@@ -23,7 +23,7 @@ This file was created as a demonstration of the routine that was used in extract
 
     -   Due to the magnitude of this task, the code was developed, and then set up to run on a remote desktop that was specifically designated for the process.
 
--   Each of the pdf files contained invoice information, but there were several different layouts. This also added some complexity to the problem since a single template could not be used.
+-   Each of the pdf files contained all of the invoice information, but there were several different layouts. This also added some complexity to the problem since a single template could not be used.
 
 -   The pdf files were a combination of image files as well as readable (editable text) files.
 
@@ -39,7 +39,7 @@ This file was created as a demonstration of the routine that was used in extract
 
         -   When the file was saved as an image, the tesseract package was used.
 
-Using these functions from these pacakages, the data from each file was extracted and compiled into a single data set. The following code is an example of this process.
+Using the functions from these packages, the data from each file was extracted and compiled into a single data set. The following code is an example of this process.
 
 ```{r}
 # Create list of the names of the folders within the directory
@@ -81,7 +81,7 @@ for(i in 1:length(folders)){
 }
 ```
 
-Once the list of all of the data rows was created, the data was then cleaned. The cleaning process included:
+Once the list of all of the data rows was created, the data was then cleaned. The first step in the cleaning process included:
 
 -   Create a data frame from the list of values.
 
@@ -105,12 +105,12 @@ for (i in 1:length(dat)){ # i = 1
 # Rename the value column
 names(dat_1) <- "value"
 
-# Identify the lines that contain the key values. Note that the values in this code have been modified to line up with the existing data.
+# Identify the lines that contain the key values. Note that this code has been modified to line up with the information contained in the sample files.
 dat_1 <- dat_1 %>%
   mutate(flag = case_when(grepl("cash", value) ~ 1,
                             grepl( "payments", value) ~ 1))
 ```
 
-The data was then output into a csv file, and all of the lines were reviewed to ensure that the information that we had identified all of the information from each invoice that we were looking for.
+We then output the data from each batch into a csv file, and all of the lines were reviewed to ensure that the information that was identified from each invoice was accurate, and the information was complete.
 
-Once the data was reviewed, we then brought the data back into R, and assembled the information that we wanted to use in the QA into a data set, and compared it to the information that was provided to us in the csv file.
+Once the data was reviewed, we then brought the data back into R. The data was then formatted, and the key value information was extracted into a single data set, and the noise was removed. Finally, we were able to compare it to the information that was provided to us in the csv file.
