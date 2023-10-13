@@ -19,7 +19,7 @@ This file was created as a demonstration of the routine that was used in extract
 
 -   For this process, the invoice pdf files were delivered by batch.
 
--   There were approximately 500 batch folders with approximately 2,000 pdf files in each folder.
+-   There were approximately 50 batch folders with approximately 2,000 pdf files in each folder.
 
     -   Due to the magnitude of this task, the code was developed, and then set up to run on a remote desktop that was specifically designated for the process.
 
